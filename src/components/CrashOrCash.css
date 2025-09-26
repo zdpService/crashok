@@ -231,3 +231,11 @@ form {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+
+@media (max-width: 45rem) {
+  .crash-display {
+    height: 40vh !important;
+  }
+}
+
