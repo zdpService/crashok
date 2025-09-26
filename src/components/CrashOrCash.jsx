@@ -67,12 +67,10 @@ const CrashOrCash = () => {
     }
   };
 
-  // Rafraîchir le solde à chaque démarrage du composant
   useEffect(() => {
     refreshWallet();
   }, [currentUser]);
 
-  // Faire disparaître le message de gain après 5 secondes
   useEffect(() => {
     if (gain) {
       const timer = setTimeout(() => {
@@ -129,7 +127,6 @@ const CrashOrCash = () => {
     return () => cancelAnimationFrame(animationIdRef.current);
   }, [targetCrash]);
 
-  // Démarrage du compte à rebours après crash
   useEffect(() => {
     if (showBetWindow) {
       countdownIntervalRef.current = setInterval(() => {
@@ -167,7 +164,6 @@ const CrashOrCash = () => {
     }
   }, [betAmount, walletAmount]);
 
-  // ✅ Soumission pari
   const handleBetSubmit = async (e) => {
     e.preventDefault();
     setGain(null);
@@ -201,7 +197,6 @@ const CrashOrCash = () => {
     setGain("Pari placé, bonne chance !");
   };
 
-  // ✅ Effet sonore Cash Out
   const playCashOutSound = () => {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -214,7 +209,6 @@ const CrashOrCash = () => {
     } catch (e) {}
   };
 
-  // ✅ Récupérer les gains
   const handleCollectGain = async () => {
     if (!hasPlacedBet || hasCollected) return;
 
@@ -233,10 +227,9 @@ const CrashOrCash = () => {
     setBetAmount("");
 
     playCashOutSound();
-    refreshWallet(); // ✅ Rafraîchir après cash out
+    refreshWallet();
   };
 
-  // ✅ Rejouer
   const handleReplay = () => {
     if (hasPlacedBet && !hasCollected) {
       setGain("❌ Pari perdu !");
@@ -259,7 +252,7 @@ const CrashOrCash = () => {
       rocketRef.current.style.bottom = "2%";
     }
 
-    refreshWallet(); // ✅ Rafraîchir après chaque nouvelle partie
+    refreshWallet();
   };
 
   const canCashOut = hasPlacedBet && !hasCollected && !hasExploded;
@@ -321,7 +314,7 @@ const CrashOrCash = () => {
       >
         <input
           type="number"
-          placeholder="Montant du pari"
+          placeholder="min 250"
           value={betAmount}
           onChange={(e) => setBetAmount(e.target.value)}
           min="250"
@@ -337,6 +330,28 @@ const CrashOrCash = () => {
             boxSizing: "border-box",
           }}
         />
+
+        {/* ✅ Boutons rapides */}
+        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+          {[250, 500, 1000, 2500].map((val) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => setBetAmount(val)}
+              disabled={hasPlacedBet && !hasCollected}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+                background: "#f1f1f1",
+                cursor: "pointer",
+              }}
+            >
+              {val}
+            </button>
+          ))}
+        </div>
+
         <button
           type="submit"
           disabled={hasPlacedBet || !showBetWindow || !isBetValid}
