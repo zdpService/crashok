@@ -1,0 +1,65 @@
+.games-dashboard {
+  background-color: #0d0d1a;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.games-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.wallet {
+  background-color: #333;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.actions span {
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+/* ✅ Nouvelle grille responsive */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.game-card {
+  height: 120px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.2);
+}
+
+.game-icon {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.game-name {
+  font-size: 14px;
+  text-align: center;
+  padding: 0 5px;
+}
+
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  opacity: 0.6;
+}

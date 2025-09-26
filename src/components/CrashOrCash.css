@@ -1,0 +1,233 @@
+.crash-container {
+  background-color: #0d0d1a;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin-top: 1.5rem;
+}
+
+.crash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wallet {
+  background-color: #333;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.icons span {
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+.crash-display {
+  position: relative;
+  height: 60vh !important;
+  margin: 30px 0;
+  border-radius: 20px;
+  overflow: hidden;
+
+  background: #87ceeb; /* ciel bleu clair */
+  background-image: url("https://i.gifer.com/AQ3M.gif"); /* image nuages */
+  background-repeat: repeat-x;
+  background-size: cover;
+  animation: gradientShift 60s linear infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 50% 70%;
+  }
+  100% {
+    background-position: 70% 100%;
+  }
+}
+
+.multiplier {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 16px;
+  border-radius: 12px;
+  z-index: 3;
+  user-select: none;
+}
+
+.rocket {
+  font-size: 50px;
+  user-select: none;
+  pointer-events: none;
+  /* transition définie en inline style */
+}
+
+.explode {
+  animation: explodeFade 0.7s ease-out infinite;
+  filter: drop-shadow(0 0 20px #ff2c55);
+}
+
+@keyframes explodeFade {
+  0% {
+    transform: scale(2) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) rotate(15deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(4) rotate(-30deg);
+    opacity: 0;
+  }
+}
+
+.crash-controls {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.cash-out-btn,
+.replay-btn {
+  background: #ff9900;
+  color: white;
+  padding: 12px 30px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 8px;
+}
+
+.cash-out-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.cash-out-btn:hover:not(:disabled),
+.replay-btn:hover {
+  background-color: #cc7a00;
+}
+
+.gain-message {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup {
+  padding: 30px 40px;
+  border-radius: 12px;
+  text-align: center;
+  color: white;
+  max-width: 320px;
+  box-shadow: 0 0 15px #ff2c55;
+}
+
+.popup h2 {
+  margin-bottom: 15px;
+}
+
+.popup button {
+  background: #ff2c55;
+  border: none;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.popup button:hover {
+  background: #cc2444;
+}
+
+.bet-input-container input[type="number"] {
+  padding: 12px 15px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 2px solid #555;
+  background-color: #111842;
+  color: white;
+  width: 220px;
+  transition: border-color 0.3s ease;
+  outline: none;
+}
+
+.bet-input-container input[type="number"]:focus {
+  border-color: #ff9900;
+  background-color: #1c1c4e;
+}
+
+.bet-input-container div {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #ff4c4c;
+  font-weight: 600;
+}
+form {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.bet-input {
+  padding: 12px 15px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 220px;
+  outline: none;
+  transition: 0.2s ease-in-out;
+}
+
+.bet-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.bet-button {
+  margin-top: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.bet-button:hover {
+  background-color: #0056b3;
+}
+
+.bet-button.disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
