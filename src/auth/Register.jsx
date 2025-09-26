@@ -127,16 +127,39 @@ const RegisterLogin = () => {
 
         {message && <p className="message">{message}</p>}
 
-        <p className="toggle">
+        <p
+          style={{
+            paddingTop: "24px",
+          }}
+          className="toggle"
+        >
           {mode === "register" ? (
             <>
               Déjà inscrit ?{" "}
-              <span onClick={() => setMode("login")}>Se connecter</span>
+              <span
+                style={{
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  color: "#184e80ff",
+                }}
+                onClick={() => setMode("login")}
+              >
+                Se connecter
+              </span>
             </>
           ) : (
             <>
               Pas encore de compte ?{" "}
-              <span onClick={() => setMode("register")}>Créer un compte</span>
+              <span
+                style={{
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  color: "#184e80ff",
+                }}
+                onClick={() => setMode("register")}
+              >
+                Créer un compte
+              </span>
             </>
           )}
         </p>
