@@ -345,6 +345,8 @@ const CrashOrCash = () => {
                 border: "1px solid #ccc",
                 background: "#f1f1f1",
                 cursor: "pointer",
+                fontWeight: "bold",
+                color: "#0500009a",
               }}
             >
               {val}
