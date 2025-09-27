@@ -1,11 +1,11 @@
-// src/pages/Retrait.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/Context";
 import {
   getFirestore,
   collection,
   addDoc,
   doc,
+  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import { app } from "../auth/firebase";
@@ -14,10 +14,29 @@ import { useNavigate } from "react-router-dom";
 const Retrait = () => {
   const { currentUser, walletAmount, setWalletAmount } = useAuth();
   const [amount, setAmount] = useState("");
+  const [method, setMethod] = useState("wave");
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [telephone, setTelephone] = useState(null); // Nouveau
   const db = getFirestore(app);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!currentUser) return;
+      try {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setTelephone(data.telephone || null);
+        }
+      } catch (err) {
+        console.error("Erreur récupération téléphone :", err);
+      }
+    };
+    fetchUserData();
+  }, [currentUser, db]);
 
   if (!currentUser) {
     return (
@@ -31,6 +50,11 @@ const Retrait = () => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+
+    if (!telephone || telephone.trim() === "") {
+      setError("Veuillez ajouter votre numéro de retrait avant de retirer.");
+      return;
+    }
 
     const retraitAmount = parseFloat(amount);
 
@@ -48,8 +72,10 @@ const Retrait = () => {
       await addDoc(collection(db, "retraits"), {
         userId: currentUser.uid,
         amount: retraitAmount,
+        method: method,
         date: new Date(),
         status: "en attente",
+        telephone: telephone,
       });
 
       const userDocRef = doc(db, "users", currentUser.uid);
@@ -60,7 +86,9 @@ const Retrait = () => {
       setWalletAmount(walletAmount - retraitAmount);
 
       setSuccessMsg(
-        `Retrait de ${retraitAmount.toFixed(2)} ₣ effectué avec succès.`
+        `Retrait de ${retraitAmount.toFixed(
+          2
+        )} ₣ effectué avec succès via ${method}.`
       );
       setAmount("");
     } catch (error) {
@@ -91,6 +119,21 @@ const Retrait = () => {
           style={styles.input}
         />
 
+        <label htmlFor="method" style={styles.label}>
+          Méthode de retrait :
+        </label>
+        <select
+          id="method"
+          value={method}
+          onChange={(e) => setMethod(e.target.value)}
+          style={styles.select}
+        >
+          <option value="wave">Wave</option>
+          <option value="orange">Orange</option>
+          <option value="mtn">MTN</option>
+          <option value="moov">Moov</option>
+        </select>
+
         {error && <p style={styles.error}>{error}</p>}
         {successMsg && <p style={styles.success}>{successMsg}</p>}
 
@@ -99,8 +142,8 @@ const Retrait = () => {
         </button>
       </form>
 
-      <button style={styles.backBtn} onClick={() => navigate("/")}>
-        ← Retour à l'accueil
+      <button style={styles.backBtn} onClick={() => navigate("/crash-or-cash")}>
+        ← Retour au jeu
       </button>
     </div>
   );
@@ -109,7 +152,7 @@ const Retrait = () => {
 const styles = {
   container: {
     maxWidth: 400,
-    margin: "40px auto",
+    margin: "70px auto",
     padding: 30,
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -144,6 +187,14 @@ const styles = {
     border: "1.8px solid #ddd",
     marginBottom: 15,
     transition: "border-color 0.3s",
+    outline: "none",
+  },
+  select: {
+    padding: "12px 15px",
+    fontSize: 16,
+    borderRadius: 8,
+    border: "1.8px solid #ddd",
+    marginBottom: 15,
     outline: "none",
   },
   submitBtn: {
