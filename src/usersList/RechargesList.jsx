@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
 
-const RechargesList = () => {
+const RetraitsList = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
-  const [userRecharges, setUserRecharges] = useState([]);
-  const [newAmount, setNewAmount] = useState("");
+  const [userRetraits, setUserRetraits] = useState([]);
 
-  // ✅ Charger tous les utilisateurs
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -32,66 +24,29 @@ const RechargesList = () => {
     }
   };
 
-  // ✅ Charger les recharges d'un utilisateur
-  const fetchUserRecharges = async (userId) => {
+  const fetchUserRetraits = async (userId) => {
     try {
-      const ref = collection(db, "recharges");
+      const ref = collection(db, "retraits");
       const snapshot = await getDocs(ref);
       const data = snapshot.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .filter((r) => r.userId === userId);
-      setUserRecharges(data);
+      setUserRetraits(data);
     } catch (error) {
-      console.error("Erreur recharges :", error);
-      setMessage("Erreur lors du chargement des recharges.");
+      console.error("Erreur retraits :", error);
+      setMessage("Erreur lors du chargement des retraits.");
     }
   };
 
-  // ✅ Valider une recharge
-  const handleValidate = async (recharge) => {
+  const handleChangeStatus = async (retraitId, newStatus) => {
     try {
-      const userRef = doc(db, "users", recharge.userId);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        const currentBalance = userSnap.data().walletAmount || 0;
-        const newBalance = currentBalance + recharge.montant;
-
-        await updateDoc(userRef, { walletAmount: newBalance });
-        const rechargeRef = doc(db, "recharges", recharge.id);
-        await updateDoc(rechargeRef, { status: "validated" });
-
-        setMessage(
-          `Recharge validée pour ${recharge.nom}. Nouveau solde : ${newBalance} FCFA`
-        );
-        fetchUserRecharges(recharge.userId);
-        fetchUsers();
-      } else {
-        setMessage("Utilisateur introuvable.");
-      }
+      const retraitRef = doc(db, "retraits", retraitId);
+      await updateDoc(retraitRef, { status: newStatus });
+      setMessage("Statut modifié avec succès.");
+      fetchUserRetraits(selectedUser.id);
     } catch (error) {
-      console.error("Erreur validation :", error);
-      setMessage("Erreur lors de la validation.");
-    }
-  };
-
-  // ✅ Mettre à jour le solde manuellement
-  const handleUpdateBalance = async () => {
-    if (!newAmount || isNaN(newAmount)) {
-      alert("Veuillez entrer un montant valide !");
-      return;
-    }
-    try {
-      const userRef = doc(db, "users", selectedUser.id);
-      await updateDoc(userRef, { walletAmount: parseFloat(newAmount) });
-
-      setMessage(`Solde mis à jour pour ${selectedUser.nom} !`);
-      fetchUsers();
-      setSelectedUser({ ...selectedUser, walletAmount: parseFloat(newAmount) });
-      setNewAmount("");
-    } catch (error) {
-      console.error("Erreur mise à jour :", error);
-      setMessage("Erreur lors de la mise à jour du solde !");
+      console.error("Erreur modification statut :", error);
+      setMessage("Erreur lors de la modification du statut.");
     }
   };
 
@@ -99,17 +54,27 @@ const RechargesList = () => {
     fetchUsers();
   }, []);
 
-  if (loading) return <p>Chargement...</p>;
+  if (loading) return <p style={{ textAlign: "center" }}>Chargement...</p>;
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Gestion des Utilisateurs & Recharges</h2>
-      {message && <p style={{ color: "green" }}>{message}</p>}
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h2 style={{ color: "#1976d2" }}>
+        📊 Gestion des Utilisateurs & Retraits
+      </h2>
+      {message && (
+        <p style={{ color: "green", fontWeight: "bold" }}>{message}</p>
+      )}
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ backgroundColor: "#2196F3", color: "#fff" }}>
-            <th>Nom</th>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        }}
+      >
+        <thead style={{ backgroundColor: "#1976d2", color: "#fff" }}>
+          <tr>
+            <th style={{ padding: "10px" }}>Nom</th>
             <th>Email</th>
             <th>Solde</th>
             <th>Actions</th>
@@ -118,7 +83,7 @@ const RechargesList = () => {
         <tbody>
           {users.map((u) => (
             <tr key={u.id} style={{ borderBottom: "1px solid #ccc" }}>
-              <td>{u.nom || "N/A"}</td>
+              <td style={{ padding: "10px" }}>{u.nom || "N/A"}</td>
               <td>{u.email || "N/A"}</td>
               <td>{u.walletAmount || 0} FCFA</td>
               <td>
@@ -127,17 +92,16 @@ const RechargesList = () => {
                     backgroundColor: "#4CAF50",
                     color: "#fff",
                     border: "none",
-                    padding: "5px 10px",
-                    borderRadius: 5,
+                    padding: "6px 12px",
+                    borderRadius: "5px",
                     cursor: "pointer",
                   }}
                   onClick={() => {
                     setSelectedUser(u);
-                    setNewAmount(u.walletAmount || 0);
-                    fetchUserRecharges(u.id);
+                    fetchUserRetraits(u.id);
                   }}
                 >
-                  Voir Recharges
+                  Voir Retraits
                 </button>
               </td>
             </tr>
@@ -145,7 +109,6 @@ const RechargesList = () => {
         </tbody>
       </table>
 
-      {/* ✅ Modal Utilisateur + Recharges */}
       {selectedUser && (
         <div
           style={{
@@ -154,83 +117,80 @@ const RechargesList = () => {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "rgba(0,0,0,0.6)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
+            zIndex: 9999,
           }}
         >
           <div
             style={{
-              color: "#000",
               background: "#fff",
-              padding: 20,
-              borderRadius: 8,
-              width: "500px",
+              padding: "20px",
+              borderRadius: "8px",
+              width: "700px",
               maxHeight: "80%",
               overflowY: "auto",
+              boxShadow: "0 0 15px rgba(0,0,0,0.3)",
             }}
           >
-            <h3>
-              {selectedUser.nom} - Solde actuel: {selectedUser.walletAmount}{" "}
+            <h3 style={{ marginBottom: "10px" }}>
+              📄 {selectedUser.nom} - Solde actuel: {selectedUser.walletAmount}{" "}
               FCFA
             </h3>
 
-            <div style={{ marginBottom: 15 }}>
-              <input
-                type="number"
-                value={newAmount}
-                onChange={(e) => setNewAmount(e.target.value)}
-                style={{ padding: 8, width: "60%", marginRight: 10 }}
-              />
-              <button
-                onClick={handleUpdateBalance}
+            <h4 style={{ color: "#1976d2" }}>Retraits</h4>
+            {userRetraits.length === 0 ? (
+              <p>Aucun retrait trouvé.</p>
+            ) : (
+              <table
                 style={{
-                  backgroundColor: "#007BFF",
-                  color: "#fff",
-                  border: "none",
-                  padding: "8px 12px",
-                  borderRadius: 5,
-                  cursor: "pointer",
+                  width: "100%",
+                  marginTop: "10px",
+                  borderCollapse: "collapse",
+                  fontSize: "14px",
                 }}
               >
-                Mettre à jour
-              </button>
-            </div>
-
-            <h4>Recharges</h4>
-            {userRecharges.length === 0 ? (
-              <p>Aucune recharge trouvée.</p>
-            ) : (
-              <table style={{ width: "100%", marginTop: 10 }}>
-                <thead>
+                <thead style={{ backgroundColor: "#f2f2f2" }}>
                   <tr>
-                    <th>Montant</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th style={{ padding: "8px" }}>Montant</th>
+                    <th>Méthode</th>
+                    <th>Date</th>
+                    <th>Statut</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {userRecharges.map((r) => (
-                    <tr key={r.id}>
-                      <td>{r.montant} FCFA</td>
-                      <td>{r.status}</td>
+                  {userRetraits.map((r) => (
+                    <tr
+                      key={r.id}
+                      style={{
+                        borderBottom: "1px solid #ccc",
+                        transition: "background 0.3s",
+                      }}
+                    >
+                      <td style={{ padding: "8px" }}>{r.amount} FCFA</td>
+                      <td>{r.method}</td>
                       <td>
-                        {r.status === "pending" && (
-                          <button
-                            style={{
-                              backgroundColor: "#4CAF50",
-                              color: "#fff",
-                              border: "none",
-                              padding: "5px 10px",
-                              borderRadius: 5,
-                              cursor: "pointer",
-                            }}
-                            onClick={() => handleValidate(r)}
-                          >
-                            Valider
-                          </button>
-                        )}
+                        {new Date(r.date.seconds * 1000).toLocaleString()}
+                      </td>
+                      <td>
+                        <select
+                          value={r.status}
+                          onChange={(e) =>
+                            handleChangeStatus(r.id, e.target.value)
+                          }
+                          style={{
+                            padding: "5px",
+                            borderRadius: "5px",
+                            border: "1px solid #ccc",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          <option value="en cours">En cours</option>
+                          <option value="terminé">Terminé</option>
+                          <option value="annulé">Annulé</option>
+                        </select>
                       </td>
                     </tr>
                   ))}
@@ -240,12 +200,12 @@ const RechargesList = () => {
 
             <button
               style={{
-                marginTop: 10,
+                marginTop: "15px",
                 backgroundColor: "#F44336",
                 color: "#fff",
                 border: "none",
-                padding: "8px 12px",
-                borderRadius: 5,
+                padding: "10px 15px",
+                borderRadius: "5px",
                 cursor: "pointer",
               }}
               onClick={() => setSelectedUser(null)}
@@ -259,4 +219,4 @@ const RechargesList = () => {
   );
 };
 
-export default RechargesList;
+export default RetraitsList;
