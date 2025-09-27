@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../auth/firebase";
 
-
 const RetraitsList = () => {
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [userRetraits, setUserRetraits] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -17,6 +18,7 @@ const RetraitsList = () => {
       const snapshot = await getDocs(ref);
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setUsers(data);
+      setFilteredUsers(data);
     } catch (error) {
       console.error("Erreur :", error);
       setMessage("Impossible de charger les utilisateurs.");
@@ -51,6 +53,18 @@ const RetraitsList = () => {
     }
   };
 
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = users.filter(
+      (u) =>
+        (u.nom && u.nom.toLowerCase().includes(query)) ||
+        (u.email && u.email.toLowerCase().includes(query))
+    );
+    setFilteredUsers(filtered);
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -58,13 +72,36 @@ const RetraitsList = () => {
   if (loading) return <p style={{ textAlign: "center" }}>Chargement...</p>;
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div
+      style={{
+        marginTop: "50px",
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
       <h2 style={{ color: "#1976d2" }}>
         📊 Gestion des Utilisateurs & Retraits
       </h2>
       {message && (
         <p style={{ color: "green", fontWeight: "bold" }}>{message}</p>
       )}
+
+      {/* 🔍 Champ de recherche */}
+      <input
+        type="text"
+        placeholder="🔍 Rechercher un utilisateur..."
+        value={searchQuery}
+        onChange={handleSearch}
+        style={{
+          padding: "8px",
+          width: "100%",
+          maxWidth: "400px",
+          marginBottom: "20px",
+          borderRadius: "5px",
+          border: "1px solid #ccc",
+          fontSize: "14px",
+        }}
+      />
 
       <table
         style={{
@@ -82,8 +119,11 @@ const RetraitsList = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
-            <tr key={u.id} style={{ borderBottom: "1px solid #ccc" }}>
+          {filteredUsers.map((u) => (
+            <tr
+              key={u.id}
+              style={{ borderBottom: "1px solid #ccc", color: "#f1f1ff" }}
+            >
               <td style={{ padding: "10px" }}>{u.nom || "N/A"}</td>
               <td>{u.email || "N/A"}</td>
               <td>{u.walletAmount || 0} FCFA</td>
