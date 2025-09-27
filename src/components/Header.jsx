@@ -5,7 +5,7 @@ import ProfilsUser from "./ProfilsUser";
 import { useNavigate } from "react-router-dom";
 import "./Header.css";
 
-const Header = () => {
+const Header = ({}) => {
   const { currentUser, walletAmount } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
