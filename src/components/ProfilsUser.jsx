@@ -7,23 +7,37 @@ import {
   FaHistory,
   FaCog,
   FaSignOutAlt,
+  FaArrowLeft, // import icône flèche
 } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { app } from "../auth/firebase";
 import PopupModal from "./PopupModal";
-import { useAuth } from "../context/Context"; // <-- importer le contexte ici
+import { useAuth } from "../context/Context";
 import "./ProfilsUser.css";
 
-const ProfilsUser = ({ onCloseProfile }) => {
+const ProfilsUser = ({ onCloseProfile, toggleProfile }) => {
   const [userData, setUserData] = useState(null);
   const [activePopup, setActivePopup] = useState(null);
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [newPhone, setNewPhone] = useState("");
+
   const auth = getAuth(app);
   const db = getFirestore(app);
   const navigate = useNavigate();
 
-  const { walletAmount } = useAuth(); // <-- récupère le solde global depuis le contexte
+  const { walletAmount } = useAuth();
+
+  const generateUserId = () => {
+    return Math.floor(100000000 + Math.random() * 900000000);
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,8 +46,39 @@ const ProfilsUser = ({ onCloseProfile }) => {
         try {
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
+
           if (docSnap.exists()) {
-            setUserData(docSnap.data());
+            const data = docSnap.data();
+
+            if (!data.userId) {
+              const newUserId = generateUserId();
+              await setDoc(doc(db, "users", currentUser.uid), {
+                ...data,
+                userId: newUserId,
+                telephone: data.telephone || "",
+                telephoneModifiable: true,
+              });
+              setUserData({
+                ...data,
+                userId: newUserId,
+                telephone: data.telephone || "",
+                telephoneModifiable: true,
+              });
+            } else {
+              if (data.telephoneModifiable === undefined) {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                  telephoneModifiable: true,
+                });
+                data.telephoneModifiable = true;
+              }
+              if (!data.telephone) {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                  telephone: "",
+                });
+                data.telephone = "";
+              }
+              setUserData(data);
+            }
           } else {
             console.log("Aucune donnée utilisateur trouvée.");
           }
@@ -59,12 +104,48 @@ const ProfilsUser = ({ onCloseProfile }) => {
 
   const closePopup = () => setActivePopup(null);
 
+  const savePhone = async () => {
+    if (!newPhone.trim()) return;
+    const currentUser = auth.currentUser;
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      telephone: newPhone,
+      telephoneModifiable: false,
+    });
+    setUserData({
+      ...userData,
+      telephone: newPhone,
+      telephoneModifiable: false,
+    });
+    setEditingPhone(false);
+  };
+
   if (!userData) {
     return <div className="profil-container">Chargement du profil...</div>;
   }
 
   return (
     <div className="profil-container">
+      {/* Bouton Retour */}
+      <button
+        className="back-btn-profile"
+        onClick={() => {
+          if (onCloseProfile) onCloseProfile(); // appelle onCloseProfile si défini
+          navigate("/crash-or-cash"); // redirection
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          marginBottom: "10px",
+          display: "flex",
+          alignItems: "center",
+          fontSize: "16px",
+          color: "#1976d2",
+        }}
+      >
+        <FaArrowLeft style={{ marginRight: "5px" }} /> Retour
+      </button>
+
       <h2 className="profil-title">
         <FaUser style={{ marginRight: "8px" }} /> Mon Profil
       </h2>
@@ -82,6 +163,77 @@ const ProfilsUser = ({ onCloseProfile }) => {
             ? walletAmount.toFixed(2)
             : (userData.solde || 0).toFixed(2)}{" "}
           ₣
+        </p>
+        <p>
+          <strong>ID Utilisateur :</strong> {userData.userId}
+        </p>
+        <p>
+          <strong>Téléphone :</strong>{" "}
+          {!editingPhone ? (
+            <>
+              {userData.telephone || "N° de retrait"}{" "}
+              {userData.telephoneModifiable && (
+                <button
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#262626",
+                    color: "#ffffff",
+                    border: "none",
+                    boxShadow: "1px 1px 2px 2px #ffffff",
+                    borderRadius: "0px 7px 0px 7px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    setEditingPhone(true);
+                    setNewPhone(userData.telephone || "");
+                  }}
+                >
+                  Ajouter
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="modificationNumber">
+              <input
+                style={{
+                  padding: "0.3rem  0.1rem",
+                }}
+                type="text"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+              />
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <button
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#262626",
+                    color: "#ffffff",
+                    border: "none",
+                    boxShadow: "1px 1px 2px 2px #ffffff",
+                    borderRadius: "0px 7px 0px 7px",
+                    cursor: "pointer",
+                  }}
+                  onClick={savePhone}
+                >
+                  Enregistrer
+                </button>
+                <button
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#262626",
+                    color: "red",
+                    border: "none",
+                    boxShadow: "1px 1px 2px 2px #ffffff",
+                    borderRadius: "0px 7px 0px 7px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setEditingPhone(false)}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
         </p>
       </div>
 
