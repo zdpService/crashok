@@ -115,7 +115,7 @@ const Recharge = () => {
       onSubmit={handleRecharge}
       style={{
         maxWidth: 400,
-        margin: "2rem auto",
+        margin: "5rem auto",
         padding: 20,
         border: "1px solid #ccc",
         borderRadius: 12,
