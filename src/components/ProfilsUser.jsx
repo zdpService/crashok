@@ -140,7 +140,8 @@ const ProfilsUser = ({ onCloseProfile, toggleProfile }) => {
           display: "flex",
           alignItems: "center",
           fontSize: "16px",
-          color: "#1976d2",
+           fontWeight: "bold",
+  color: #ffffff,
         }}
       >
         <FaArrowLeft style={{ marginRight: "5px" }} /> Retour
